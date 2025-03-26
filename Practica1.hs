@@ -142,7 +142,11 @@ sumar' = foldr (+) 0 --recursion implicita, agarro el resultado de la recursion 
 filter' :: (a -> Bool) -> [a] -> [a]
 filter' f = foldr (\x recursion-> if f x then x:recursion else  recursion) []--si cumple la condicion, lo agrego a la lista, si no, no lo agrego
 
+map' :: (a -> b) -> [a] -> [b]
+map' f = foldr (\x recursion -> f x : recursion) [] --aplico la funcion a la cabeza de la lista y la agrego a la lista, luego sigo con la recursion
 
+listaComp:: (a -> Bool) -> (a -> b) -> [a] -> [b]
+listaComp f g = map g . filter f --composicion de funciones
 
 
 
