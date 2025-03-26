@@ -123,11 +123,25 @@ reverseAnidado xs = reverse(map reverse xs) -- en este caso no se puede obviar e
 paresCuadrados :: [Int] -> [Int]
 paresCuadrados xs = map(\x -> if even x then x*x else x) xs -- si es par, devuelve el cuadrado, si no, devuelve el mismo numero
 
+-- funcion foldl y foldr
 --foldl y foldr son funciones que toman una funcion, un valor inicial y una lista y devuelven un valor, la diferencia entre foldl y foldr es el orden en el que se aplican los argumentos, foldl aplica la funcion de izquierda a derecha y foldr aplica la funcion de derecha a izquierda, por ejemplo foldl (+) 0 [1, 2, 3, 4, 5] = 15, foldr (+) 0 [1, 2, 3, 4, 5] = 15, foldl (-) 0 [1, 2, 3, 4, 5] = -15, foldr (-) 0 [1, 2, 3, 4, 5] = 3
 -- foldl f z [x1, x2, x3, ..., xn] = f (... (f (f z x1) x2) ...) xn
 -- foldr f z [x1, x2, x3, ..., xn] = f x1 (f x2 (f x3 (... (f xn z) ...)))
 -- foldl f z [] = z -- caso base, si la lista esta vacia, devuelve el valor inicial
 -- foldr f z [] = z -- caso base, si la lista esta vacia, devuelve el valor inicial
+
+--ejemplo de foldr
+
+sumar :: [Int] -> Int
+sumar [] = 0
+sumar (x:xs) = x + sumar xs --recursion explicita
+
+sumar' :: [Int] -> Int
+sumar' = foldr (+) 0 --recursion implicita, agarro el resultado de la recursion y le sumo la cabeza de la lista, el cero corresponde al caso base
+
+filter' :: (a -> Bool) -> [a] -> [a]
+filter' f = foldr (\x recursion-> if f x then x:recursion else  recursion) []--si cumple la condicion, lo agrego a la lista, si no, no lo agrego
+
 
 
 
