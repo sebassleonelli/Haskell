@@ -280,9 +280,9 @@ elementosEnPosicionesPares [] = []
 -- esta funcion no es recursion estructural pero si primitiva 
 -- trimm hecha con foldr
 --trim = foldr(\x lista -> if x == ' ' then lista else x : (falata algo aca)) [] (si pongo lista en el else me borraria todos los espacios y no quiero eso)
--- recr :: (a -> [a](esto es nuevo) -> b - > b) -> b -> [a] -> b
--- recr f z [] = z 
--- recr f z (x:xs) = f x xs (recr f z xs) -- es la escritura de foldr
+recr :: (a -> [a](esto es nuevo) -> b - > b) -> b -> [a] -> b
+recr f z [] = z 
+recr f z (x:xs) = f x xs (recr f z xs) -- es la escritura de foldr
 -- trim = recr(\x xs recursion -> if x == ' ' then recursion else x : xs) [] (es de la forma char -> string -> string -> string)
 -- con recr se comporta como una funcion primitiva
 
@@ -293,4 +293,56 @@ elementosEnPosicionesPares [] = []
 -- foldl :: (b -> a -> b)(funcion que calcula el nuevo acumulador) -> b -> [a] -> b
 -- foldl f acumulador [] = acumulador
 -- foldl f acumulador (x:xs) = foldl f (f acumulador x) xs (pongo foldl f por que es la funcion que se va a aplicar, y el nuevo acumulador es el resultado de aplicar f al acumulador y a la cabeza de la lista)
---
+-- ejemplo pasaje binario a decimal
+bin2dec:: [Int] -> Int
+bin2dec = foldl(\acum x -> acum * 2 + x) 0 -- el acumulador es el resultado de la conversion, y el nuevo acumulador es el resultado de aplicar f al acumulador y a la cabeza de la lista, el cero es el caso base
+-- recursion estructural == foldr
+-- recursion primitiva == recr
+-- recursion iterativa == foldl
+-- los ejercicios para pensar de las diapos a veces entran en el final
+
+--Tipos de datos algebraicos
+-- tipos de datos enumerados tienen muchos constructores y son las unicas maneras de construirlos 
+-- tipos producto tienen un solo constructor con muchos parametros 
+-- un tipo puede tener muchos constructores con muchos parametros
+-- algunos constructores pueden ser recursivos como el arbol binario o las listas
+-- doble :: Nat -> Nat
+-- doble zero = zero
+-- doble (suc x) = suc(suc (doble x)) 
+-- en Haskell las definiciones recursivas se interpretan de manera coinductiva en lugar de inductiva
+-- los constructores base no reciben parametros de tipo T
+-- los constructores recursivos reciben al menos un parametro de tipo T
+-- ejemplo listas:
+-- data [a] = []| a : [a]
+productoCartesiano :: [a] -> [b] -> [(a,b)]
+productoCartesiano [] ys = []
+productoCartesiano (x:xs) ys = productoCartesiano xs ys ++ map (\y -> (x,y)) ys preguntar por que funciona escribir productoCartesiano xs ys
+
+data AB a = nill | Bin (AB a) a (AB a) 
+inorder :: AB a -> [a]
+inorder nill = []
+inorder (Bin izq x der) = inorder izq ++ [x] ++ inorder der
+
+insertar :: Ord a => a -> AB a -> AB a
+insertar x nill = Bin nill x nill
+insertar x (Bin izq y der)  | x < y = Bin (insertar x izq) y der
+                            | x > y = Bin izq y (insertar x der)
+                            | otherwise = Bin izq y der
+
+-- Esquemas de recursion sobre otras estructuras
+-- Decimos que g esta dada por recursion estructural si:
+-- Cada caso base se escribe combinando los parametros.
+-- Cada caso recursivo:
+-- No usa la funcion g.
+-- No usa los parametros del constructor que son de tipo T.
+-- Pero puede:
+-- Hacer llamados recursivos sobre parametros de tipo T.
+-- Usar los parametros del constructor que no son de tipo T.
+-- constructores:
+-- Nill :: AB a
+-- Bin :: AB a -> a -> AB a -> AB a
+-- va a haber una funcion combinadora por cada contructor
+-- foldAB :: b -> (b(hacer recursion sobre el hijo izq) -> a -> b(hacer recursion sobre el hijo der) -> b) -> AB a -> b
+-- foldAB cnill cbin nill = cnill
+-- foldAB cnill cbin (Bin izq x der) = cbin (foldAB cnill cbin izq) x (foldAB cnill cbin der)
+-- no puedo ver los nodos pero si puedo llamarlos recursivamente 
