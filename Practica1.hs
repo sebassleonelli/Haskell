@@ -171,8 +171,8 @@ normaVectorial x y = sqrt (x^2 + y^2)
 curry :: ((a, b) -> c) -> (a -> b -> c)
 (curry f) x y = f (x, y) 
 
-uncurry :: (a -> b -> c) -> ((a, b) -> c)
-(uncurry f) (x, y) = f x y
+uncurry1 :: (a -> b -> c) -> ((a, b) -> c)
+(uncurry1 f) (x, y) = f x y
 
 -- El tipo de curryN seria curryN :: ((a1 -> a2 -> ... -> an -> b) -> (a1 -> (a2 -> ... -> (an -> b)))), tomando funciones que reciben un solo argumento de uno en uno
 -- la implementacion de curryN seria como la de curry solamente qeu se aplicaria n veces, es decir, curryN f x1 x2 ... xn = f x1 x2 ... xn
@@ -250,6 +250,96 @@ elementosEnPosicionesPares [] = []
                                      --else x : elementosEnPosicionesPares (tail xs)) --chequear esto pero funciona
 --elementosEnPosicionesPares (x:xs) = foldr(\y lista -> if [n| n <- [0..length xs], n `mod` 2 == 0] == [] then [x] else x : lista) [] xs 
 
+-- recr :: (a-> [a]-> b-> b)-> b-> [a]-> b
+ --recr _ z [] = z
+ --recr f z (x : xs) = f x xs (recr f z xs)
+
+-- Ejercico 6
+sacarUna :: Eq a => a-> [a]-> [a]
+sacarUna y = recr (\x xs rec -> if x == y then xs else x : rec) []
+
+--foldr no permite cortar la recursion temprana ya que recorre y aplica la funcion a todos los elementos de la lista sin importar si ya se encontro el elemento o no, en cambio recr permite cortar la recursion temprana ya que se puede usar una condicion para salir de la recursion antes de llegar al final de la lista, ademas de que permite usar el resultado de la recursion en la funcion que se aplica a cada elemento de la lista, lo que no es posible con foldr.
+
+insertarOrdenado :: Ord a => a-> [a]-> [a]
+insertarOrdenado y = recr (\x xs rec -> if x <= y then x : rec else y : x : xs) []
+
+--Ejercicio 7
+
+mapPares :: (a -> b -> c) -> [(a,b)] -> [c]
+mapPares f xs = map (uncurry1 f) xs 
+
+armarPares :: [a] -> [b] -> [(a,b)]
+armarPares [] _ = []
+armarPares _ [] = []
+armarPares (x:xs) (y:ys) = (x,y) : armarPares xs ys -- no lo hice como una lambda por que no queria usar la funcion zip
+
+armarPares' :: [a] -> [b] -> [(a, b)]
+armarPares' xs ys = map (\(x, y) -> (x, y)) (take (min (length xs) (length ys)) (zip xs ys)) --version lambda que no usa zip como parte de la definicion directa.
+
+mapDoble :: (a -> b -> c) -> [a] -> [b] -> [c]
+mapDoble f xs ys = foldr (\(x, y) recursion -> f x y : recursion) [] (cortarLista xs ys)
+  where
+    cortarLista (x:xs) (y:ys) = (x, y) : cortarLista xs ys
+    cortarLista _ _ = []
+-- en este caso cortarLista es una funcion auxiliar que crea las tuplas hasta la lista que tenga menor longitud, por requiere sabemos que tienen el mismo tamaño, por lo tanto, no genera un problema.
+--mapDoble :: (a -> b -> c) -> [a] -> [b] -> [c] con recursion explicita
+--mapDoble _ [] [] = []
+--mapDoble f (x:xs) (y:ys) = f x y : mapDoble f xs ys
+--mapDoble _ _ _ = []  -- Caso cuando las listas no tienen la misma longitud
+--Ejercicio 8
+sumaMat :: [[Int]] -> [[Int]] -> [[Int]]
+sumaMat xs ys = zipWith (zipWith (+)) xs ys
+
+trasponer :: [[Int]] -> [[Int]]
+trasponer [] = []  -- Caso base: si la matriz está vacía, la traspuesta también lo es.
+trasponer (xs:xss) = map head (xs:xss) : trasponer (map tail (xs:xss))
+
+--Ejercicio 9
+foldNat :: (Integer -> Integer) -> Integer -> Integer -> Integer
+foldNat _ z 0 = z 
+foldNat f z n = f  (foldNat f z (n-1)) 
+--Como devuelve un valor fijo, no depende de g y el caso recursivo no puede usar las variables g ni xs, salvo en la expresion (g xs), es decir, es una recursion estructural.
+
+potencia :: Integer -> Integer -> Integer
+potencia x = foldNat (\ac -> ac * x) 1 
+
+-- Ejercicio 10
+genLista :: a-> (a-> a)-> Integer-> [a]
+genLista x f 0 = [x] -- caso base, devuelve una lista con el elemento x
+genLista x f n = x : genLista (f x) f (n-1) 
+
+desdeHasta :: Integer -> Integer -> [Integer]
+desdeHasta x y = genLista x (+1) (y-x) 
+
+--Ejercicio 11
+-- preguntar si tengo que aplicar esas funciones en recursion estructural
+
+
+--Ejercicio 12
+data AB a = Nil | Bin (AB a) a (AB a)
+foldAB :: b -> (b -> a -> b -> b) -> AB a -> b
+foldAB cnill cbin nill = cnill
+foldAB cnill cbin (Bin izq x der) = cbin (foldAB cnill cbin izq) x (foldAB cnill cbin der)
+
+recAB :: b -> (b -> a -> b -> Arbol a -> Arbol a -> b) -> Arbol a -> b
+recAB cnill cbin Nill = cnill
+recAB cnill cbin (Bin izq x der) = cbin (recAB cnill cbin izq) x (recAB cnill cbin der) izq der
+
+esNil :: AB a -> Bool
+esNil arbol = case arbol of
+    Nil -> True
+    _   -> False
+
+altura :: AB a -> Integer
+altura arbol = foldAB 0 (\izq _ der -> 1 + max izq der) arbol
+
+cantNodos :: AB a -> Integer
+cantNodos arbol = foldAB 0 (\izq _ der -> 1 + izq + der) arbol
+
+mejorSegunAB :: (a -> a -> Bool) -> AB a -> a
+mejorSegunAB f arbol = foldAB id (\izq x der -> if f x izq then if f x der then x else der else if f izq der then izq else der) arbol
+
+
 --Apuntes de clase
 -- la expresion map filter es [c -> Bool] -> [[c] -> [c]], es decir, recibe una funcion que devuelve un booleano y una lista y devuelve una lista,funcion que recibe una lista de predicados y devuelve una lista con las funciones que cumplen con ese 
 -- map aplicado a filter podria servir para por ejemplo,map filter [esPar,esImpar] [1,2,3,4] = [2,4] ya que esPar y esImpar son funciones que devuelven un booleano y [1,2,3,4] es una lista de enteros
@@ -280,7 +370,7 @@ elementosEnPosicionesPares [] = []
 -- esta funcion no es recursion estructural pero si primitiva 
 -- trimm hecha con foldr
 --trim = foldr(\x lista -> if x == ' ' then lista else x : (falata algo aca)) [] (si pongo lista en el else me borraria todos los espacios y no quiero eso)
-recr :: (a -> [a](esto es nuevo) -> b - > b) -> b -> [a] -> b
+recr :: (a -> [a]-> b -> b) -> b -> [a] -> b
 recr f z [] = z 
 recr f z (x:xs) = f x xs (recr f z xs) -- es la escritura de foldr
 -- trim = recr(\x xs recursion -> if x == ' ' then recursion else x : xs) [] (es de la forma char -> string -> string -> string)
@@ -316,18 +406,16 @@ bin2dec = foldl(\acum x -> acum * 2 + x) 0 -- el acumulador es el resultado de l
 -- data [a] = []| a : [a]
 productoCartesiano :: [a] -> [b] -> [(a,b)]
 productoCartesiano [] ys = []
-productoCartesiano (x:xs) ys = productoCartesiano xs ys ++ map (\y -> (x,y)) ys preguntar por que funciona escribir productoCartesiano xs ys
+productoCartesiano (x:xs) ys = productoCartesiano xs ys ++ map (\y -> (x,y)) ys --preguntar por que funciona escribir productoCartesiano xs ys
 
-data AB a = nill | Bin (AB a) a (AB a) 
-inorder :: AB a -> [a]
-inorder nill = []
-inorder (Bin izq x der) = inorder izq ++ [x] ++ inorder der
+--data AB a = nill | Bin (AB a) a (AB a) 
+--inorder :: AB a -> [a]
+--inorder nill = []
+--inorder (Bin izq x der) = inorder izq ++ [x] ++ inorder der
 
-insertar :: Ord a => a -> AB a -> AB a
-insertar x nill = Bin nill x nill
-insertar x (Bin izq y der)  | x < y = Bin (insertar x izq) y der
-                            | x > y = Bin izq y (insertar x der)
-                            | otherwise = Bin izq y der
+--insertar :: Ord a => a -> AB a -> AB a
+--insertar x nill = Bin nill x nill
+--insertar x (Bin izq y der)  | x < y = Bin (insertar x izq) y der | x > y = Bin izq y (insertar x der) | otherwise = Bin izq y der
 
 -- Esquemas de recursion sobre otras estructuras
 -- Decimos que g esta dada por recursion estructural si:
