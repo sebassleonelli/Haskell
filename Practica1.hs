@@ -434,3 +434,77 @@ productoCartesiano (x:xs) ys = productoCartesiano xs ys ++ map (\y -> (x,y)) ys 
 -- foldAB cnill cbin nill = cnill
 -- foldAB cnill cbin (Bin izq x der) = cbin (foldAB cnill cbin izq) x (foldAB cnill cbin der)
 -- no puedo ver los nodos pero si puedo llamarlos recursivamente 
+
+--Clase practica // presentacion del TP
+-- foldr1 :: (a -> a -> a) -> [a] -> a no toma un caso base con la precondicion de que la lista no este vacia, como se devuelve el mismo tipo de la lista Foldr1 debe teneir el mismo tipo
+-- una funcion es estructural cuando el argumento inductivo de la lista (la cola xs) es utilizada
+-- subListaQueMasSuma :: [Int] -> Int
+-- subListaQueMasSuma = recr (\x xs res -> if (sum . prefijoQueMasSuma)(x:xs) >= sum res then prefijoQueMasSuma (x:xs) else res) [] 
+-- usa en esquema de recursion primitiva ya que necesitamos acceder a las subestructuras, en este caso xs 
+
+-- Generacion Infinita
+pares :: [(Int, Int)]
+pares = [(x,y) | x <- [0..], y <- [0..]] -- lista infinita de pares (x,y) donde x e y son enteros no negativos, esto es unalista por comprension,x e y son los selectores de los elementos que van a ir en la tupla
+-- tambien le puedo agregar condiciones, por ejemplo x + y == 2
+
+pares2 :: [(Int, Int)]  
+pares2 = [ p | k <- [0..], p <- paresQuesuman k]
+
+paresQuesuman :: Int -> [(Int, Int)]
+paresQuesuman k = [(i, k-i) | i <- [0..k]] 
+-- otra idea armar las tuplas que suman k, por ejemplo (0,2), (1,1), (2,0) y asi sucesivamente
+
+--data AEB a = Hoja a | Bin (AEB a) a (AEB a)
+-- Estamos ante un tipo de dato inductivo con un constructor no recursivo y un constructor recursivo, el arbol bin llama al tipo de dato AEB
+
+--foldAEB ::  (a -> b)(tomamos el a de la hoja, computamos algo y devolvemos el resultado b) -> (b (subarbol izquierdo)-> a(raiz) -> b(subarbol derecho) -> b)(funcion que trabaja sobre el arbol) -> AEB a(el arbol en si) -> b
+--foldAEB cHoja cBin Hoja e = cHoja e -- caso base, si es una hoja, devuelve el resultado de aplicar la funcion a la hoja
+--foldAEB cHoja cBin (bin izq x der) = cBin (foldAEB cHoja cBin izq) x (foldAEB cHoja cBin der)
+
+-- foldAEB cHoja cBin t = case t of Hoja e -> cHoja e
+-- Bin izq x der -> cBin (foldAEB cHoja cBin izq) x (foldAEB cHoja cBin der)
+
+
+--ramas :: AEB a -> [[a]]
+--ramas t = foldAEB (\e -> [[e]]) (\izq x der -> map (x:) (izq ++  der)) t
+
+-- altura :: AEB a -> Int
+-- altura  = foldAEB (const 1) (\recizq _ recder -> 1 + max recizq recder) 
+
+-- take' :: [a] -> Int -> [a]
+-- take' [] _ = const []
+-- take' (x:xs) = \n -> if n == 0 then [] else x : take' xs (n-1) 
+-- take' xs n = foldr (\x rec n -> if n == 0 then [] else x : rec (n-1)) const []
+
+-- Insertar abb de la practica es recursion primitiva por que necesitamos las subestructuras como las ramas del arbol, tenes el arbol, no haces recursion sobre el arbol
+-- este es el ejercicio 11 de la practica
+-- data Polinomio a = x | Constante a | Suma (Polinomio a) (Polinomio a) | Producto (Polinomio a) (Polinomio a) 
+-- e p = case p of 
+-- x -> e
+-- Constante y -> y
+-- Suma p1 p2 -> Suma (evaluar e p1) + (evaluar e p2)
+-- producto p1 p2 -> Producto (evaluar e p1) * (evaluar e p2)
+
+-- foldPolinomio :: b -> 
+--                    (a -> b) ->
+--                    (b -> b -> b) -> 
+--                    (b -> b -> b) -> 
+--                    Polinomio a -> 
+--                    b 
+-- la ventaja del case es que se escribe menos codigo
+-- foldPolinomio cX cCte fsuma gprod p = case p of
+-- x -> cX
+-- Cte y -> cCte y
+-- Suma p1 p2 -> (fsuma (rec p1) (rec p2))
+
+
+-- where 
+-- rec = foldPolinomio cX cCte fsuma gprod 
+
+-- evaluar :: Num a => a -> Polinomio a -> a
+-- evaluar e = foldPolinomio e id (\r1 r2 -> r1 + r2) (\r1 r2 -> r1 * r2)
+-- foldPolinomio e id (+) (*) otra opcion mas corta ya que en esos parametros van funciones
+
+
+--Ejercicio 15
+-- data RoseTree a = Rose a [RoseTree a] 
