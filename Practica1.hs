@@ -507,4 +507,12 @@ paresQuesuman k = [(i, k-i) | i <- [0..k]]
 
 
 --Ejercicio 15
--- data RoseTree a = Rose a [RoseTree a] 
+-- data RoseTree a = Rose a(primera variable) [RoseTree a(posibles rosetrees que son hijos de la raiz)] 
+-- Esquema de recursion estructural
+-- foldRose :: (a -> [b]) -> b) -> RoseTree a -> b
+-- foldRose f (Rose x xs) = f x (map (foldRose f) xs) le pasamos map por que rose usa una lista, el resto de los rose estan en xs
+
+
+-- AlturaRose :: RoseTree a -> Int
+-- AlturaRose = foldRose (\_ xs -> 1 + maximum xs) 
+-- AlturaRose = foldRose (\_ rec -> if null rec then 1 else 1 + maximum rec) \\ otra forma de hacerlo, maximum toma el maximo de una lista, si la lista es vacia devuelve 0
