@@ -515,4 +515,16 @@ paresQuesuman k = [(i, k-i) | i <- [0..k]]
 
 -- AlturaRose :: RoseTree a -> Int
 -- AlturaRose = foldRose (\_ xs -> 1 + maximum xs) 
--- AlturaRose = foldRose (\_ rec -> if null rec then 1 else 1 + maximum rec) \\ otra forma de hacerlo, maximum toma el maximo de una lista, si la lista es vacia devuelve 0
+-- AlturaRose = foldRose (\_ rec -> if null rec then 1 else 1 + maximum rec) \\ otra forma de hacerlo, maximum toma el maximo de una lista, si la lista es vacia devuelve 0  y usamos maximum para los casos en los que tiene dos hijos y que le entrarian dos listas, va a ir armando listas de uno que son casos de la recursion, es decir va a armar una lista con [1(para el ultimo nodo),2 (para el penultimo),3(para el antepenultimo)] y va a devolver el maximo de esa lista, es decir, la altura del arbol
+
+-- type conj a = (a -> Bool)
+-- vacio :: conj a 
+-- vacio = const False
+
+-- agregar :: Eq a => a -> conj a -> conj a
+-- agregar x c = \y -> y == x || c y -- esta funcion no guarda nada, decide si deberia agregarse o no, por ejemplo si hago parsCon5 = agregar 5 even y despues hago paresCon5 5, eso es igual a true
+
+-- union :: Eq a => conj a -> conj a -> conj a
+-- union c1 c2 = \x -> c1 x || c2 x
+
+
